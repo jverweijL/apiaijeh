@@ -3,8 +3,12 @@ package com.liferay.demo.rest.application;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Collections;
+import java.util.Date;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.GET;
@@ -15,6 +19,9 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.Response;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.auth.AuthScope;
@@ -103,6 +110,52 @@ public class ApiaijehApplication extends Application {
 		}
 
 		return "";
+	}
+
+	@GET
+	@Path("/compare/dates")
+	@Produces("text/plain")
+	public String comparedates(
+			@QueryParam("date1") String datestring1,
+			@QueryParam("date2") String datestring2) throws ParseException, JsonProcessingException {
+
+		System.out.println("comparing dates...");
+
+		SimpleDateFormat sdf = new SimpleDateFormat("MM-dd-yyyy");
+		Date date1 = sdf.parse(datestring1);
+		Date date2 = sdf.parse(datestring2);
+
+		System.out.println("date1 : " + sdf.format(date1));
+		System.out.println("date2 : " + sdf.format(date2));
+
+
+		long diffInMillies = date2.getTime() - date1.getTime();
+		long diff = TimeUnit.DAYS.convert(diffInMillies, TimeUnit.MILLISECONDS);
+
+		ObjectMapper mapper = new ObjectMapper();
+		ObjectNode rootNode = mapper.createObjectNode();
+		rootNode.put("diffdays",diff);
+		/*{
+			"diffdays": -1,
+				"message": "date1 smaller"
+		}*/
+
+		if (date1.after(date2)) {
+			System.out.println("Date1 is after Date2");
+			rootNode.put("message", "Date1 is after Date2");
+		}
+
+		if (date1.before(date2)) {
+			System.out.println("Date1 is before Date2");
+			rootNode.put("message", "Date1 is before Date2");
+		}
+
+		if (date1.equals(date2)) {
+			System.out.println("Date1 is equal Date2");
+			rootNode.put("message", "Date1 is equal Date2");
+		}
+
+		return mapper.writer().writeValueAsString(rootNode);
 	}
 
 }
