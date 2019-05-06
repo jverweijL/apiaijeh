@@ -22,6 +22,7 @@ import javax.ws.rs.core.Response;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.liferay.journal.service.JournalArticleLocalService;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.auth.AuthScope;
@@ -36,6 +37,8 @@ import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
 
 /**
  * @author jverweij
@@ -120,8 +123,10 @@ public class ApiaijehApplication extends Application {
 			@QueryParam("date2") String datestring2) throws ParseException, JsonProcessingException {
 
 		System.out.println("comparing dates...");
+		System.out.println("incoming... " + datestring1);
+		System.out.println("incoming... " + datestring2);
 
-		SimpleDateFormat sdf = new SimpleDateFormat("MM-dd-yyyy");
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 		Date date1 = sdf.parse(datestring1);
 		Date date2 = sdf.parse(datestring2);
 
@@ -157,5 +162,8 @@ public class ApiaijehApplication extends Application {
 
 		return mapper.writer().writeValueAsString(rootNode);
 	}
+
+	@Reference(cardinality = ReferenceCardinality.MANDATORY)
+	protected JournalArticleLocalService _JournalArticleLocalService;
 
 }
